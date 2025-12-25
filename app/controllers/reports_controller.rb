@@ -2,9 +2,19 @@ class ReportsController < ApplicationController
     before_action :set_report, only: [:show, :update, :destroy]
   
     # GET /reports
+    # def index
+    #   reports = Report.all
+    #   render json: reports
+    # end
+
     def index
-      reports = Report.all
-      render json: reports
+      if @current_user.admin?
+        reports = Report.all 
+      else
+        reports = @current_user.reports
+      end
+
+      render json: reports, include: :user
     end
   
     # GET /reports/:id
@@ -24,18 +34,31 @@ class ReportsController < ApplicationController
   
     # PUT /reports/:id
     def update
-      if @report.update(report_params)
-        render json: @report
+      report = Report.find(params[:id])
+    
+      unless @current_user.admin? || report.user_id == @current_user.id
+        return render json: { error: "Unauthorized" }, status: :unauthorized
+      end
+    
+      if report.update(report_params)
+        render json: report
       else
-        render json: { errors: @report.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: report.errors.full_messages }, status: :unprocessable_entity
       end
     end
+    
   
     # DELETE /reports/:id
     def destroy
-      @report.destroy
-      render json: { message: "Report deleted" }
-    end
+      report = Report.find(params[:id])
+    
+      unless @current_user.admin? || report.user_id == @current_user.id
+        return render json: { error: "Unauthorized" }, status: :unauthorized
+      end
+    
+      report.destroy
+      head :no_content
+    end    
   
     private
   
@@ -46,7 +69,7 @@ class ReportsController < ApplicationController
     end
   
     def report_params
-      params.permit(:title, :description, :location, :status)
+      params.require(:report).permit(:title, :description, :location, :status)
     end
   end
   
