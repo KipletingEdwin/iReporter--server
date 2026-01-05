@@ -47,7 +47,5 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 end
 
-group :production do
-  gem "pg"
-end
+
 
