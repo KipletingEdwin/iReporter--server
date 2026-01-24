@@ -1,6 +1,6 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
     allow do
-      origins 'http://localhost:5173'  # your frontend URL
+      origins 'http://localhost:5173', 'https://ireporter-e.netlify.app'
   
       resource '*',
         headers: :any,
